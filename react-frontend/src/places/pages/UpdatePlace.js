@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Input from '../../shared/components/FormElements/Input';
 import Button from '../../shared/components/FormElements/Button';
+import Card from '../../shared/components/UIElements/Card';
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH
@@ -29,36 +30,36 @@ const UpdatePlace = () => {
   const [isLoading, setIsLoading] = useState(true);
   const placeId = useParams().placeId;
 
-  const [formState, inputHandler, setFormData] = useForm(
-    {
-      title: {
-        value: '',
-        isValid: false
-      },
-      description: {
-        value: '',
-        isValid: false
-      }
+  const [formState, inputHandler, setFormData] = useForm({
+    title: {
+      value: '',
+      isValid: false
     },
-  );
+    description: {
+      value: '',
+      isValid: false
+    }
+  });
 
   const identifiedPlace = PLACES.find(p => p.id === placeId);
 
   useEffect(() => {
-    setFormData(
-      {
-        title: {
-          value: identifiedPlace.title,
-          isValid: false
+    if (identifiedPlace) {
+      setFormData(
+        {
+          title: {
+            value: identifiedPlace.title,
+            isValid: false
+          },
+          description: {
+            value: identifiedPlace.description,
+            isValid: false
+          }
         },
-        description: {
-          value: identifiedPlace.description,
-          isValid: false
-        }
-      },
-      true
-    );
-    setIsLoading(false)
+        true
+      );
+    }
+    setIsLoading(false);
   }, [setFormData, identifiedPlace]);
 
   const placeUpdateSubmitHandler = event => {
@@ -69,7 +70,9 @@ const UpdatePlace = () => {
   if (!identifiedPlace) {
     return (
       <div className="center">
-        <h2>Could not find place!</h2>
+        <Card>
+          <h2>Could not find place!</h2>
+        </Card>
       </div>
     );
   }
