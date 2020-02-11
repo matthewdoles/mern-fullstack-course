@@ -1,4 +1,5 @@
 const HttpErrpr = require('../models/http-error');
+const uuid = require('uuid/v4');
 
 const DUMMY_PLACES = [
   {
@@ -36,6 +37,8 @@ const getPlaceById = (req, res, next) => {
       new HttpErrpr('Could not find a place with the provided id.', 404)
     );
   }
+
+  res.json({ place });
 };
 
 const getPlacesByUserId = (req, res, next) => {
@@ -51,4 +54,23 @@ const getPlacesByUserId = (req, res, next) => {
   res.json({ userPlaces });
 };
 
-module.exports = { getPlaceById, getPlacesByUserId };
+const createPlace = (req, res, next) => {
+  const { title, description, coordinates, address, creator } = req.body;
+  const newPlace = {
+    id: uuid(),
+    title,
+    description,
+    location: coordinates,
+    address,
+    creator
+  }
+
+  DUMMY_PLACES.push(newPlace);
+  res.status(200).json({ place: DUMMY_PLACES });
+};
+
+module.exports = {
+  getPlaceById,
+  getPlacesByUserId,
+  createPlace
+};
