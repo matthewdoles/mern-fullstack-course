@@ -1,9 +1,10 @@
-const uuid = require('uuid/v4');
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 const getCoordsForAddress = require('../util/location');
 const Place = require('../models/place');
+const User = require('../models/user');
 
 let DUMMY_PLACES = [
   {
@@ -94,8 +95,29 @@ const createPlace = async (req, res, next) => {
     creator
   });
 
+  let user;
   try {
-    await newPlace.save();
+    user = await User.findById(creator);
+  } catch (error) {
+    return next(new HttpError('Unalbe to save place, please try again.', 500));
+  }
+
+  if (!user) {
+    return next(
+      new HttpError(
+        'Could not find user to associate with place, please try again.',
+        500
+      )
+    );
+  }
+
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await newPlace.save({ session });
+    user.places.push(newPlace);
+    await user.save({ session });
+    await session.commitTransaction();
   } catch (error) {
     return next(
       new HttpError('Unalbe to save place, please check try again.', 500)
@@ -108,7 +130,7 @@ const createPlace = async (req, res, next) => {
 const updatePlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next( new HttpError('Invalid input, please check your data', 422));
+    return next(new HttpError('Invalid input, please check your data', 422));
   }
 
   const { title, description } = req.body;
