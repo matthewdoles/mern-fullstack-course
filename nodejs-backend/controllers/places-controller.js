@@ -6,33 +6,6 @@ const getCoordsForAddress = require('../util/location');
 const Place = require('../models/place');
 const User = require('../models/user');
 
-let DUMMY_PLACES = [
-  {
-    id: 'p1',
-    title: 'Empire State Building',
-    description: 'One of the most iconic skyscrpers in the world',
-    image: 'https://media.timeout.com/images/101705309/630/472/image.jpg',
-    address: '20 W 34th St, New York, NY 10001',
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644
-    },
-    creator: 'u1'
-  },
-  {
-    id: 'p2',
-    title: 'Empire State Building',
-    description: 'One of the most iconic skyscrpers in the world',
-    image: 'https://media.timeout.com/images/101705309/630/472/image.jpg',
-    address: '20 W 34th St, New York, NY 10001',
-    location: {
-      lat: 40.7484405,
-      long: -73.9856644
-    },
-    creator: 'u1'
-  }
-];
-
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
@@ -55,20 +28,24 @@ const getPlaceById = async (req, res, next) => {
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
-  let places;
+  let userPlaces;
   try {
-    places = await Place.find({ creator: userId });
+    userPlaces = await User.findById(userId).populate('places');
   } catch (error) {
     return next(new HttpError('Trouble retrieving user places.', 500));
   }
 
-  if (places.length === 0) {
+  if (userPlaces.places.length === 0) {
     return next(
       new HttpError('Could not find any places with the provided user id.', 404)
     );
   }
 
-  res.json({ places: places.map(place => place.toObject({ getters: true })) });
+  res.json({
+    userPlaces: userPlaces.places.map(place =>
+      place.toObject({ getters: true })
+    )
+  });
 };
 
 const createPlace = async (req, res, next) => {
@@ -164,7 +141,9 @@ const deletePlace = async (req, res, next) => {
   try {
     place = await Place.findById(placeId).populate('creator');
   } catch (error) {
-    return next(new HttpError('Could not delete place, please try again.', 500));
+    return next(
+      new HttpError('Could not delete place, please try again.', 500)
+    );
   }
 
   if (!place) {
