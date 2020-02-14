@@ -17,7 +17,6 @@ const UserPlaces = () => {
         const repsonseData = await sendRequest(
           `http://localhost:5000/api/places/user/${userId}`
         );
-        console.log(repsonseData)
         setLoadedPlaces(repsonseData.userPlaces);
       } catch (error) {}
     };
