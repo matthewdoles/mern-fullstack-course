@@ -78,7 +78,7 @@ const Auth = () => {
       } catch (err) {}
     } else {
       try {
-        const responseData = await fetch(
+        const responseData = await sendRequest(
           'http://localhost:5000/api/users/signup',
           'POST',
           JSON.stringify({
@@ -90,7 +90,7 @@ const Auth = () => {
             'Content-Type': 'application/json'
           }
         );
-
+          console.log(responseData)
         auth.login(responseData.user.id);
       } catch (err) {}
     }
@@ -129,8 +129,8 @@ const Auth = () => {
             id="password"
             type="password"
             label="Password"
-            validators={[VALIDATOR_MINLENGTH(5)]}
-            errorText="Please enter a valid password (at least 5 charachters)."
+            validators={[VALIDATOR_MINLENGTH(6)]}
+            errorText="Please enter a valid password (at least 6 charachters)."
             onInput={inputHandler}
           />
           <Button type="submit" disabled={!formState.isValid}>
