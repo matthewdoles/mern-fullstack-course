@@ -40,7 +40,8 @@ const Auth = () => {
       setFormData(
         {
           ...formState.inputs,
-          name: undefined
+          name: undefined,
+          image: undefined
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -50,6 +51,11 @@ const Auth = () => {
           ...formState.inputs,
           name: {
             value: '',
+            isValid: false
+          },
+
+          iamge: {
+            value: null,
             isValid: false
           }
         },
@@ -91,7 +97,7 @@ const Auth = () => {
             'Content-Type': 'application/json'
           }
         );
-          console.log(responseData)
+        console.log(responseData);
         auth.login(responseData.user.id);
       } catch (err) {}
     }
@@ -116,7 +122,9 @@ const Auth = () => {
               onInput={inputHandler}
             />
           )}
-           {!isLoginMode && <ImageUpload center id="image" />}
+          {!isLoginMode && (
+            <ImageUpload center id="image" onInput={inputHandler} />
+          )}
           <Input
             element="input"
             id="email"
