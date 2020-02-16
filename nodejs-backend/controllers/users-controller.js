@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
@@ -43,7 +44,7 @@ const signup = async (req, res, next) => {
   try {
     hashedPassword = await bcrypt.hash(password, 12);
   } catch (error) {
-    next(new HttpError('Could not create user, please try again.'))
+    next(new HttpError('Could not create user, please try again.'));
   }
 
   const newUser = new User({
@@ -62,7 +63,22 @@ const signup = async (req, res, next) => {
     );
   }
 
-  res.status(201).json({ user: newUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h'
+      }
+    );
+  } catch (error) {
+    return next(new HttpError('Signup failed, please try again.', 500));
+  }
+
+  res
+    .status(201)
+    .json({ uerId: newUser.id, email: newUser.email, token: token });
 };
 
 const login = async (req, res, next) => {
@@ -86,16 +102,38 @@ const login = async (req, res, next) => {
 
   letIsValidPassword = false;
   try {
-    letIsValidPassword = await bcrypt.compare(password, existingUser.password)
+    letIsValidPassword = await bcrypt.compare(password, existingUser.password);
   } catch (error) {
-    return next(new HttpError('Could not log you in, please check your credentials and try again.', 500));
+    return next(
+      new HttpError(
+        'Could not log you in, please check your credentials and try again.',
+        500
+      )
+    );
   }
 
   if (!letIsValidPassword) {
     return next(new HttpError('Invalid credentials, please try again.', 500));
   }
 
-  res.json({ message: 'Logged in!', user: existingUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { uerId: existingUser.id, email: existingUser.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h'
+      }
+    );
+  } catch (error) {
+    return next(new HttpError('Login failed, please try again.', 500));
+  }
+
+  res.json({
+    userId: existingUser.id,
+    email: existingUser.email,
+    token: token
+  });
 };
 
 module.exports = {
