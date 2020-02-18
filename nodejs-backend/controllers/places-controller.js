@@ -121,6 +121,10 @@ const updatePlace = async (req, res, next) => {
     return next(new HttpError('Trouble retrieving a place.', 500));
   }
 
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError('Unauthorized to edit place.', 401));
+  }
+
   place.title = title;
   place.description = description;
 
