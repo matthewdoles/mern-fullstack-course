@@ -155,6 +155,10 @@ const deletePlace = async (req, res, next) => {
     return next(new HttpError('Could not find Place with given id.', 500));
   }
 
+  if (place.creator.id !== req.userData.userId) {
+    return next(new HttpError('Unauthorized to delete place.', 401));
+  }
+
   const imagePath = place.image;
 
   try {
