@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "env-cmd nodemon app.js"
+    "start": "nodemon app.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,7 +22,6 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "env-cmd": "^10.1.0",
     "nodemon": "^2.0.2"
   }
 }
